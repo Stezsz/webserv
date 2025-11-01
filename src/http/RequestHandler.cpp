@@ -6,7 +6,7 @@
 /*   By: tborges- <tborges-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/26 17:38:38 by tborges-          #+#    #+#             */
-/*   Updated: 2025/11/01 15:23:28 by tborges-         ###   ########.fr       */
+/*   Updated: 2025/11/01 16:47:14 by tborges-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -374,7 +374,7 @@ Response RequestHandler::handleFileUpload(const Request& request, const Route* r
 	     << "<meta charset=\"UTF-8\">\n"
 	     << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
 	     << "<title>Upload Bem-Sucedido</title>\n"
-	     << "<meta http-equiv=\"refresh\" content=\"2;url=/delete.html\">\n"
+	     << "<meta http-equiv=\"refresh\" content=\"5;url=/delete.html\">\n"
 	     << "<style>\n"
 	     << "* { margin: 0; padding: 0; box-sizing: border-box; }\n"
 	     << "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }\n"
@@ -395,7 +395,7 @@ Response RequestHandler::handleFileUpload(const Request& request, const Route* r
 	     << ".link { display: inline-block; color: #667eea; text-decoration: none; font-weight: 600; padding: 10px 20px; border: 2px solid #667eea; border-radius: 6px; transition: all 0.3s; }\n"
 	     << ".link:hover { background: #667eea; color: white; }\n"
 	     << ".progress { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-top: 20px; }\n"
-	     << ".progress-bar { height: 100%; background: linear-gradient(90deg, #4CAF50, #8bc34a); animation: progress 2s linear; }\n"
+	     << ".progress-bar { height: 100%; background: linear-gradient(90deg, #4CAF50, #8bc34a); animation: progress 5s linear; }\n"
 	     << "@keyframes progress { from { width: 0%; } to { width: 100%; } }\n"
 	     << "</style>\n"
 	     << "</head>\n"
@@ -423,7 +423,7 @@ Response RequestHandler::handleFileUpload(const Request& request, const Route* r
 
 	body << "</ul>\n"
 	     << "</div>\n"
-	     << "<p class=\"redirect-info\">Redirecionando em 2 segundos...</p>\n"
+	     << "<p class=\"redirect-info\">Redirecionando em 5 segundos...</p>\n"
 	     << "<div style=\"text-align: center;\">\n"
 	     << "<a href=\"/delete.html\" class=\"link\">Ir Agora &rarr;</a>\n"
 	     << "</div>\n"
