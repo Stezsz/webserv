@@ -6,7 +6,7 @@
 /*   By: tborges- <tborges-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/26 17:38:38 by tborges-          #+#    #+#             */
-/*   Updated: 2025/10/31 20:20:52 by tborges-         ###   ########.fr       */
+/*   Updated: 2025/11/01 15:23:28 by tborges-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -189,8 +189,17 @@ Response RequestHandler::handleGet(const Request& request, const Route* route) {
 			// In production, you'd parse the date and compare with fileStat.st_mtime
 		}
 
-		// Set Cache-Control header
-		response.setCacheControl("public, max-age=3600");
+		// Set Cache-Control header based on file type
+		// HTML files with dynamic content should not be cached
+		if (extension == "html" || extension == "htm") {
+			// Disable cache for HTML files (they often contain dynamic JavaScript)
+			response.setCacheControl("no-cache, no-store, must-revalidate");
+			response.setHeader("Pragma", "no-cache");
+			response.setHeader("Expires", "0");
+		} else {
+			// Cache static resources (CSS, JS, images, etc.) for 1 hour
+			response.setCacheControl("public, max-age=3600");
+		}
 	}
 
 	response.setBody(content);
@@ -356,26 +365,78 @@ Response RequestHandler::handleFileUpload(const Request& request, const Route* r
 	// Build response
 	Response response;
 	response.setStatus(201); // Created
-	response.setContentType("text/html");
+	response.setContentType("text/html; charset=utf-8");
 
 	std::ostringstream body;
 	body << "<!DOCTYPE html>\n"
-	     << "<html>\n"
-	     << "<head><title>Upload Successful</title></head>\n"
+	     << "<html lang=\"pt\">\n"
+	     << "<head>\n"
+	     << "<meta charset=\"UTF-8\">\n"
+	     << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
+	     << "<title>Upload Bem-Sucedido</title>\n"
+	     << "<meta http-equiv=\"refresh\" content=\"2;url=/delete.html\">\n"
+	     << "<style>\n"
+	     << "* { margin: 0; padding: 0; box-sizing: border-box; }\n"
+	     << "body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }\n"
+	     << ".container { background: white; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); max-width: 500px; width: 100%; padding: 40px; animation: slideIn 0.3s ease-out; }\n"
+	     << "@keyframes slideIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }\n"
+	     << ".icon { width: 80px; height: 80px; background: #4CAF50; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; font-size: 40px; color: white; }\n"
+	     << ".icon::before { content: '\\2713'; }\n"
+	     << "h1 { color: #333; text-align: center; font-size: 24px; margin-bottom: 10px; }\n"
+	     << ".subtitle { color: #666; text-align: center; margin-bottom: 30px; font-size: 14px; }\n"
+	     << ".success-box { background: #f0f9ff; border-left: 4px solid #4CAF50; padding: 15px; border-radius: 4px; margin-bottom: 25px; }\n"
+	     << ".success-box strong { color: #2e7d32; font-size: 16px; }\n"
+	     << ".file-list { background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 25px; }\n"
+	     << ".file-list h3 { color: #555; font-size: 14px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }\n"
+	     << ".file-list ul { list-style: none; }\n"
+	     << ".file-list li { padding: 8px 12px; background: white; margin-bottom: 8px; border-radius: 4px; color: #333; font-size: 13px; word-break: break-all; border: 1px solid #e0e0e0; }\n"
+	     << ".file-list li::before { content: '\\1F4C4'; margin-right: 8px; }\n"
+	     << ".redirect-info { text-align: center; color: #666; font-size: 14px; margin-bottom: 15px; }\n"
+	     << ".link { display: inline-block; color: #667eea; text-decoration: none; font-weight: 600; padding: 10px 20px; border: 2px solid #667eea; border-radius: 6px; transition: all 0.3s; }\n"
+	     << ".link:hover { background: #667eea; color: white; }\n"
+	     << ".progress { width: 100%; height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; margin-top: 20px; }\n"
+	     << ".progress-bar { height: 100%; background: linear-gradient(90deg, #4CAF50, #8bc34a); animation: progress 2s linear; }\n"
+	     << "@keyframes progress { from { width: 0%; } to { width: 100%; } }\n"
+	     << "</style>\n"
+	     << "</head>\n"
 	     << "<body>\n"
-	     << "<h1>File Upload Successful</h1>\n"
-	     << "<p>" << savedPaths.size() << " file(s) uploaded:</p>\n"
+	     << "<div class=\"container\">\n"
+	     << "<div class=\"icon\"></div>\n"
+	     << "<h1>Upload Bem-Sucedido!</h1>\n"
+	     << "<p class=\"subtitle\">Seus arquivos foram enviados com sucesso</p>\n"
+	     << "<div class=\"success-box\">\n"
+	     << "<strong>" << savedPaths.size() << " arquivo(s) carregado(s)</strong>\n"
+	     << "</div>\n"
+	     << "<div class=\"file-list\">\n"
+	     << "<h3>Arquivos Salvos</h3>\n"
 	     << "<ul>\n";
 
 	for (size_t i = 0; i < savedPaths.size(); ++i) {
-		body << "<li>" << savedPaths[i] << "</li>\n";
+		// Extract just the filename from the full path
+		std::string filename = savedPaths[i];
+		size_t lastSlash = filename.find_last_of('/');
+		if (lastSlash != std::string::npos) {
+			filename = filename.substr(lastSlash + 1);
+		}
+		body << "<li>" << filename << "</li>\n";
 	}
 
 	body << "</ul>\n"
+	     << "</div>\n"
+	     << "<p class=\"redirect-info\">Redirecionando em 2 segundos...</p>\n"
+	     << "<div style=\"text-align: center;\">\n"
+	     << "<a href=\"/delete.html\" class=\"link\">Ir Agora &rarr;</a>\n"
+	     << "</div>\n"
+	     << "<div class=\"progress\"><div class=\"progress-bar\"></div></div>\n"
+	     << "</div>\n"
 	     << "</body>\n"
 	     << "</html>\n";
 
 	response.setBody(body.str());
+	// Disable cache for upload response to ensure fresh redirects
+	response.setCacheControl("no-cache, no-store, must-revalidate");
+	response.setHeader("Pragma", "no-cache");
+	response.setHeader("Expires", "0");
 	response.setKeepAlive(false);
 
 	return response;

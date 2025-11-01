@@ -1,0 +1,46 @@
+## Basic checks
+
+# GET
+curl -s -o /dev/null -w "Status: %{http_code}\n" http://127.0.0.1:8080/
+
+# POST (Upload)
+curl -X POST -F "file=@test_upload.txt" http://127.0.0.1:8080/uploads
+
+# GET (Download)
+curl http://127.0.0.1:8080/uploads/[filename] -o downloaded.txt
+
+# DELETE
+curl -X DELETE http://127.0.0.1:8080/uploads/[filename]
+
+# UNKNOWN method
+curl -X UNKNOWN http://127.0.0.1:8080/
+
+
+
+## Check CGI
+
+# CGI with GET method
+curl http://127.0.0.1:8080/cgi-bin/test_get.py?name=webserv&test=123
+
+# CGI with POST method
+curl -X POST -d "username=testuser&password=secret123" http://127.0.0.1:8080/cgi-bin/test_post.py
+
+# CGI runs in correct directory (for relative path file access)
+curl http://127.0.0.1:8080/cgi-bin/directory_test.py
+
+# CGI with runtime error (division by zero) - should handle gracefully
+curl http://127.0.0.1:8080/cgi-bin/error.py
+
+# Check server is still running after error
+ps aux | grep webserv | grep -v grep
+
+# CGI with infinite loop (timeout test) - should timeout
+curl --max-time 10 http://127.0.0.1:8080/cgi-bin/infinite_loop.py
+
+# Check server is still running after timeout
+ps aux | grep webserv | grep -v grep
+
+# Full CGI script with environment variables
+curl http://127.0.0.1:8080/cgi-bin/test.py
+
+

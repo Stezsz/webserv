@@ -1,450 +1,128 @@
-# 🧪 Sistema de Testes Automáticos - webserv
+# webserv - Testing Guide
 
-Este diretório contém um sistema completo de testes automáticos para o webserv.
+This directory contains test commands for evaluating the webserv project according to the 42 evaluation sheet.
 
-## 📋 Índice
+## Quick Start
 
-- [Início Rápido](#início-rápido)
-- [Scripts Disponíveis](#scripts-disponíveis)
-- [Usando o Makefile](#usando-o-makefile)
-- [Testes Individuais](#testes-individuais)
-- [Testes de Performance](#testes-de-performance)
-- [Testes com Valgrind](#testes-com-valgrind)
-
----
-
-## 🚀 Início Rápido
-
-### 1. Compilar o servidor
-
+1. **Compile the server:**
 ```bash
-cd /home/strodrig/webserv
 make
 ```
 
-### 2. Iniciar o servidor em um terminal
-
+2. **Start the server (Terminal 1):**
 ```bash
 ./webserv config/default.conf
 ```
 
-### 3. Em outro terminal, executar os testes
-
+3. **Run tests (Terminal 2):**
 ```bash
-# Testes funcionais completos
-./tests/run_tests.sh
-
-# OU usando o Makefile
-cd tests
-make test
+# Use the commands from eval_tests.txt
+# Or test manually with curl, browser, or siege
 ```
 
----
+## Test Files
 
-## 📁 Scripts Disponíveis
+- **eval_tests.txt** - Contains all curl commands for basic checks and CGI tests
 
-### 1. `run_tests.sh` - Testes Funcionais Completos
+## Mandatory Tests (from subject)
 
-Testa **todas** as funcionalidades implementadas:
+### 1. Basic Checks
+Test GET, POST, DELETE, and UNKNOWN methods. Upload and download files.
 
+### 2. CGI Tests
+Test CGI execution with GET and POST methods, verify correct directory execution, test error handling and timeouts.
+
+### 3. Browser Tests
+Open browser, check headers, test static website serving, try wrong URLs, directory listing, and redirects.
+
+### 4. Port Tests
+Test multiple ports with different websites, test duplicate port errors, test multiple server instances.
+
+### 5. Siege & Stress Tests
+
+**Install siege:**
 ```bash
-chmod +x tests/run_tests.sh
-./tests/run_tests.sh
+# Ubuntu/Debian
+sudo apt-get install siege
+
+# macOS
+brew install siege
 ```
 
-**O que é testado:**
-- ✅ Query String parsing
-- ✅ Form Data (POST)
-- ✅ File Upload (multipart/form-data)
-- ✅ Cache Headers (ETag, Last-Modified, 304)
-- ✅ DELETE Method
-- ✅ Limites de tamanho (URI, Headers)
-- ✅ Content-Type
-- ✅ Error handling (404, 403, 405)
-
-**Saída:**
-- Relatório colorido com ✓ (passou) ou ✗ (falhou)
-- Contador de testes passados/falhados
-- Taxa de sucesso percentual
-
----
-
-### 2. `stress_tests.sh` - Testes de Performance
-
-Testa o servidor sob carga:
-
+**Run stress tests:**
 ```bash
-chmod +x tests/stress_tests.sh
-./tests/stress_tests.sh
+# Basic availability test (should be > 99.5%)
+siege -b -t 30S http://127.0.0.1:8080/
+
+# Concurrent users test
+siege -c 20 -r 100 http://127.0.0.1:8080/
+
+# Monitor memory (no leaks, no indefinite growth)
+watch -n 1 'ps aux | grep webserv | grep -v grep'
 ```
 
-**O que é testado:**
-- 100 requisições sequenciais
-- Requisições concorrentes
-- Upload de arquivos grandes (1MB, 5MB)
-- 50+ conexões simultâneas
-- Testes com Apache Bench (se instalado)
-- Testes com Siege (se instalado)
+**Expected results:**
+- Availability: > 99.5%
+- No memory leaks (stable memory usage)
+- No hanging connections
+- Server should run indefinitely without restart
 
----
+## Memory Leak Testing
 
-### 3. `test_feature.sh` - Testes Individuais
-
-Testa uma funcionalidade específica com saída detalhada:
-
+**With Valgrind:**
 ```bash
-chmod +x tests/test_feature.sh
-
-# Testar query strings
-./tests/test_feature.sh query
-
-# Testar upload de arquivos
-./tests/test_feature.sh upload
-
-# Testar cache
-./tests/test_feature.sh cache
-
-# Testar DELETE
-./tests/test_feature.sh delete
-
-# Todas as funcionalidades
-./tests/test_feature.sh all
-```
-
-**Funcionalidades disponíveis:**
-- `query` - Query string parsing
-- `form` - Form data (POST)
-- `upload` - File upload
-- `cache` - Cache headers
-- `delete` - DELETE method
-- `chunked` - Chunked encoding
-- `limits` - Size limits
-- `all` - Todos os testes
-
----
-
-## 🛠️ Usando o Makefile
-
-O Makefile fornece comandos convenientes para executar os testes:
-
-```bash
-cd tests
-
-# Ver todos os comandos disponíveis
-make help
-
-# Testes funcionais
-make test
-
-# Testes de stress
-make stress
-
-# Todos os testes
-make test-all
-
-# Teste rápido (verificação básica)
-make test-quick
-
-# Cobertura de funcionalidades
-make test-coverage
-
-# Iniciar servidor para testes
-make test-server
-
-# Limpar arquivos de teste
-make test-clean
-```
-
----
-
-## 🔍 Testes Individuais por Funcionalidade
-
-### Teste de Query String
-
-```bash
-./tests/test_feature.sh query
-```
-
-**Exemplos testados:**
-- `?name=João&age=25&city=Lisboa`
-- `?message=Olá%20Mundo` (URL encoding)
-- Múltiplos parâmetros
-- Query vazia
-
----
-
-### Teste de Form Data
-
-```bash
-./tests/test_feature.sh form
-```
-
-**Exemplos testados:**
-- Form simples com name, email, message
-- Caracteres especiais (+ e %XX)
-- Múltiplos campos
-
----
-
-### Teste de Upload
-
-```bash
-./tests/test_feature.sh upload
-```
-
-**Exemplos testados:**
-- Upload de arquivo texto pequeno
-- Upload de arquivo binário (50KB)
-- Upload múltiplo de arquivos
-- Upload com campos adicionais
-
----
-
-### Teste de Cache
-
-```bash
-./tests/test_feature.sh cache
-```
-
-**O que é verificado:**
-- Header `ETag` está presente
-- Header `Last-Modified` está presente
-- Header `Cache-Control` está presente
-- Requisição com `If-None-Match` retorna 304
-- 304 não tem body
-
----
-
-### Teste de DELETE
-
-```bash
-./tests/test_feature.sh delete
-```
-
-**O que é testado:**
-- DELETE de arquivo existente → 204 No Content
-- Arquivo é removido do sistema de arquivos
-- DELETE de arquivo inexistente → 404
-- DELETE de arquivo sem permissão → 403
-
----
-
-## ⚡ Testes de Performance
-
-### Com Apache Bench (ab)
-
-```bash
-# Instalar (se necessário)
-sudo apt install apache2-utils
-
-# 1000 requisições, 10 concorrentes
-ab -n 1000 -c 10 http://localhost:8080/index.html
-
-# POST com dados
-ab -n 100 -c 10 -p post_data.txt -T "application/x-www-form-urlencoded" http://localhost:8080/test
-```
-
-### Com Siege
-
-```bash
-# Instalar (se necessário)
-sudo apt install siege
-
-# 10 usuários, 100 requisições cada
-siege -c 10 -r 100 http://localhost:8080/index.html
-
-# Teste de 30 segundos
-siege -c 20 -t 30S http://localhost:8080/index.html
-```
-
----
-
-## 🔬 Testes com Valgrind (Memory Leaks)
-
-### Método 1: Manual
-
-```bash
-# Terminal 1: Iniciar servidor com valgrind
+# Terminal 1: Start server with valgrind
 valgrind --leak-check=full \
          --show-leak-kinds=all \
          --track-origins=yes \
-         --verbose \
-         --log-file=valgrind-out.txt \
+         --log-file=valgrind.log \
          ./webserv config/default.conf
 
-# Terminal 2: Executar testes
-./tests/run_tests.sh
+# Terminal 2: Run tests
+# ... perform various tests ...
 
-# Terminal 1: Parar servidor (Ctrl+C) e verificar log
-cat valgrind-out.txt
+# Terminal 1: Stop server (Ctrl+C)
+# Check valgrind.log for leaks
+cat valgrind.log | grep "definitely lost"
 ```
 
-### Método 2: Usando Makefile
+**Expected:** 0 bytes definitely lost
 
-```bash
-cd tests
-make test-valgrind
-```
+## Configuration Tests
 
-Este comando:
-1. Inicia o servidor com valgrind
-2. Executa todos os testes
-3. Para o servidor
-4. Exibe o relatório do valgrind
+Test the following in configuration file:
+- Multiple servers with different ports ✅
+- Multiple servers with different hostnames ✅
+- Default error pages ✅
+- Client body size limit ✅
+- Routes to different directories ✅
+- Default index files ✅
+- Allowed methods per route ✅
 
-**O que procurar no relatório:**
-- `definitely lost: 0 bytes` ✅ (bom)
-- `indirectly lost: 0 bytes` ✅ (bom)
-- `possibly lost: 0 bytes` ✅ (bom)
-- `still reachable: X bytes` ⚠️ (aceitável se pequeno)
+## Status Codes to Verify
+
+- 200 OK - Successful GET
+- 201 Created - Successful POST/upload
+- 204 No Content - Successful DELETE
+- 301/302 Redirect - Redirections
+- 304 Not Modified - Cache validation
+- 403 Forbidden - Directory listing off or no permission
+- 404 Not Found - Wrong URL
+- 405 Method Not Allowed - Method not allowed for route
+- 413 Payload Too Large - Body exceeds limit
+- 500 Internal Server Error - Server error
+- 501 Not Implemented - Unknown method
+
+## Notes
+
+- Server should NEVER crash
+- All operations should return appropriate status codes
+- Error handling must work properly for all edge cases
+- select() (or equivalent) must check read and write AT THE SAME TIME
+- Only one read/write per client per select()
+- Never check errno after read/recv/write/send
+- Never read/write file descriptors without going through select()
 
 ---
 
-## 📊 Interpretando os Resultados
-
-### Testes Funcionais
-
-```
-✓ PASSOU: Query string básica processada
-✗ FALHOU: Upload de arquivo médio realizado
-  Esperado: 201
-  Recebido: 500
-```
-
-- **✓ Verde** = Teste passou
-- **✗ Vermelho** = Teste falhou (com detalhe do erro)
-- **⊘ Amarelo** = Teste pulado
-- **⚠ Amarelo** = Aviso (passou mas com observação)
-
-### Resumo Final
-
-```
-Testes Executados: 45
-Testes Passou: 43
-Testes Falhou: 2
-Taxa de Sucesso: 95%
-```
-
----
-
-## 🐛 Debugging de Testes Falhados
-
-### 1. Ver logs do servidor
-
-```bash
-# Aumentar verbosidade dos logs
-# Verifique a saída do servidor enquanto os testes rodam
-```
-
-### 2. Executar teste individual
-
-```bash
-# Teste específico com saída detalhada
-./tests/test_feature.sh upload
-```
-
-### 3. Teste manual com curl verbose
-
-```bash
-curl -v -X POST http://localhost:8080/upload \
-  -F "file=@test.txt"
-```
-
-### 4. Verificar arquivos criados
-
-```bash
-# Arquivos de upload
-ls -la ./uploads/
-
-# Logs de teste
-ls -la /tmp/webserv_tests_*
-```
-
----
-
-## 📝 Checklist de Testes
-
-Antes de submeter o projeto:
-
-- [ ] `make test` - Todos os testes funcionais passam
-- [ ] `make stress` - Servidor aguenta carga
-- [ ] `make test-valgrind` - Zero memory leaks
-- [ ] Teste manual com navegador (Chrome/Firefox)
-- [ ] Teste com telnet
-- [ ] Teste comparativo com NGINX
-
----
-
-## 🔧 Troubleshooting
-
-### Problema: "Servidor não está rodando"
-
-**Solução:**
-```bash
-# Terminal 1
-./webserv config/default.conf
-
-# Terminal 2
-./tests/run_tests.sh
-```
-
-### Problema: "Permission denied"
-
-**Solução:**
-```bash
-chmod +x tests/*.sh
-```
-
-### Problema: Testes falham aleatoriamente
-
-**Possíveis causas:**
-- Servidor sobrecarregado
-- Porta 8080 já em uso
-- Firewall bloqueando conexões
-
-**Solução:**
-```bash
-# Verificar se porta está livre
-lsof -i :8080
-
-# Matar processos na porta
-killall webserv
-```
-
-### Problema: Upload de arquivos falha
-
-**Verificar:**
-```bash
-# Diretório de upload existe?
-mkdir -p ./uploads
-chmod 755 ./uploads
-
-# Limite de tamanho configurado?
-# Ver config/default.conf: max_body_size
-```
-
----
-
-## 📚 Recursos Adicionais
-
-- **TESTING_GUIDE.md** - Guia completo de testes manuais
-- **www/test_form.html** - Interface web para testes
-- **www/api_test.html** - Testes JavaScript interativos
-- **IMPLEMENTATION_SUMMARY.md** - Documentação técnica
-
----
-
-## 🎯 Próximos Passos
-
-Depois que todos os testes passarem:
-
-1. ✅ Executar `make test-valgrind` para verificar memory leaks
-2. ✅ Testar com navegadores reais (Chrome, Firefox, Safari)
-3. ✅ Comparar comportamento com NGINX
-4. ✅ Executar stress tests prolongados
-5. ✅ Testar edge cases específicos do subject
-
----
-
-**Última atualização:** 15 Outubro 2025
-**Desenvolvido para:** webserv (42 School)
+**For detailed curl commands, see:** `eval_tests.txt`
