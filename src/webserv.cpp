@@ -6,7 +6,7 @@
 /*   By: tborges- <tborges-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/26 17:38:25 by tborges-          #+#    #+#             */
-/*   Updated: 2025/10/26 17:38:26 by tborges-         ###   ########.fr       */
+/*   Updated: 2025/11/07 23:13:20 by tborges-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,9 @@ int	main(int ac, char **av, char **env)
 
 	std::cout << std::endl;
 	Logger::success << "Server shutdown complete." << std::endl;
+
+	// Clean up singleton instances to avoid memory leaks
+	Instance::Destroy<Settings>();
 
 	return 0;
 }

@@ -6,7 +6,7 @@
 /*   By: tborges- <tborges-@student.42lisboa.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/26 17:40:35 by tborges-          #+#    #+#             */
-/*   Updated: 2025/10/26 17:40:36 by tborges-         ###   ########.fr       */
+/*   Updated: 2025/11/07 23:15:26 by tborges-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,5 +43,20 @@ public:
         T* instance = new T();
         instances_[type_hash] = instance;
         return instance;
+    }
+
+    /**
+     * Clean up all singleton instances
+     * Call this before program exit to avoid memory leaks
+     */
+    template<typename T>
+    static void Destroy() {
+        std::size_t type_hash = reinterpret_cast<std::size_t>(&typeid(T));
+
+        std::map<std::size_t, void*>::iterator it = instances_.find(type_hash);
+        if (it != instances_.end()) {
+            delete static_cast<T*>(it->second);
+            instances_.erase(it);
+        }
     }
 };
